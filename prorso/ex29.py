@@ -53,7 +53,6 @@ segments.
 
 """
 from skfem import *
-import skfem.element.element_line as element_line
 from skfem.models.general import divergence
 from skfem.models.poisson import laplace, mass
 
@@ -67,15 +66,6 @@ from scipy.sparse import block_diag, bmat, csr_matrix
 from scipy.sparse.linalg import eigs
 
 
-if __name__ == '__main__':
-    parser = ArgumentParser(description='Orr-Sommerfeld equation')
-    parser.add_argument('-e', '--element', type=str, default='P2',
-                        help='velocity element')
-    args = parser.parse_args()
-    u_element = args.element
-else:
-    u_element = 'P2'
-    
 U = Polynomial([1, 0, -1])      # base-flow profile
 
 
@@ -90,9 +80,9 @@ def base_shear(u, v, w):
 
 
 mesh = MeshLine(np.linspace(0, 1, 2**6))
-element = {'u': getattr(element_line, f'ElementLine{u_element}')(),
-           'p': ElementLineP1()}
-basis = {v: InteriorBasis(mesh, e, intorder=4) for v, e in element.items()}
+element = {'u': ElementLineP2,
+           'p': ElementLineP1}
+basis = {v: InteriorBasis(mesh, e(), intorder=4) for v, e in element.items()}
 
 L = asm(laplace, basis['u'])
 M = asm(mass, basis['u'])
